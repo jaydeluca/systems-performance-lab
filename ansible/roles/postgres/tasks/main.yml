@@ -1,0 +1,33 @@
+- name: Create directory for Postgres Data
+  file:
+    path: /var/lib/postgresql/data
+    state: directory
+    recurse: yes
+    mode: 0755
+
+- name: Move Startup Script
+  copy:
+    src: "{{ role_path }}/files/postgres-bootstrap.sql"
+    dest: /var/lib/postgresql/postgres-bootstrap.sql
+    mode: 0755
+
+- name: remove container
+  docker_container:
+    name: postgres
+    state: absent
+
+- name: Start Postgres Container
+  docker_container:
+    name: postgres
+    image: postgres:alpine3.15
+    restart_policy: always
+    user: root
+    network_mode: host
+    recreate: yes
+    state: started
+    env:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+    volumes:
+      - "/var/lib/postgresql/data:/var/lib/postgresql/data"
+      - "/var/lib/postgresql/postgres-bootstrap.sql:/docker-entrypoint-initdb.d/postgres-bootstrap.sql"

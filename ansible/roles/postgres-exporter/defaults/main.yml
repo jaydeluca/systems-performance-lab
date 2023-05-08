@@ -1,0 +1,5 @@
+go_arch: arm64
+exporter_version: 0.10.1
+exporter_binary_install_dir: "/usr/local/bin"
+postgres_dbname: postgres
+data_source_name: "user=admin dbname={{ postgres_dbname }} host=127.0.0.1 sslmode=disable"

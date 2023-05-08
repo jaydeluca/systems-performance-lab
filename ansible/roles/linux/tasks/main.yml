@@ -1,0 +1,14 @@
+- name: Install required system packages
+  apt:
+    pkg:
+      - linux-tools-5.19.0-1015-raspi
+    state: latest
+    update_cache: true
+
+# open access to performance monitoring and observability operations for processes
+# without CAP_PERFMON, CAP_SYS_PTRACE or CAP_SYS_ADMIN Linux capability
+- ansible.posix.sysctl:
+    name: kernel.perf_event_paranoid
+    value: '-1'
+    state: present
+    reload: true

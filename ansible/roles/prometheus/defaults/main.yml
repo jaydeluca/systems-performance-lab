@@ -1,0 +1,9 @@
+---
+go_arch: arm64
+prometheus_binary_install_dir: "/usr/local/bin"
+prometheus_binary_local_dir: "/tmp"
+prometheus_version: 2.43.0
+prometheus_config_location: /etc/prometheus
+prometheus_data_location: /var/lib/prometheus
+prometheus_storage_retention: "3d"
+prometheus_storage_retention_size: "5GB"

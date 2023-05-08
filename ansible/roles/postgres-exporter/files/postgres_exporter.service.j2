@@ -1,0 +1,15 @@
+[Unit]
+Description=Postgres Exporter
+
+[Service]
+Type=simple
+ExecReload=/bin/kill -HUP $MAINPID
+Environment="DATA_SOURCE_NAME={{ data_source_name }}"
+ExecStart={{ exporter_binary_install_dir }}/postgres_exporter
+LimitNOFILE=65000
+
+SyslogIdentifier=postgres_exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

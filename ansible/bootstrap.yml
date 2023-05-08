@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: true
+  roles:
+   - prometheus
+   - node-exporter
+   - docker-install
+   - linux

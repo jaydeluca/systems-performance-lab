@@ -1,0 +1,21 @@
+[Unit]
+Description=Prometheus
+
+[Service]
+Type=simple
+Environment="GOMAXPROCS={{ ansible_processor_vcpus|default(ansible_processor_count) }}"
+User=prometheus
+Group=prometheus
+ExecReload=/bin/kill -HUP $MAINPID
+ExecStart={{ prometheus_binary_install_dir }}/prometheus \
+  --storage.tsdb.path={{ prometheus_data_location }} \
+  --storage.tsdb.retention.time={{ prometheus_storage_retention }} \
+  --storage.tsdb.retention.size={{ prometheus_storage_retention_size }} \
+  --config.file={{ prometheus_config_location }}/prometheus.yml
+LimitNOFILE=65000
+
+SyslogIdentifier=prometheus
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

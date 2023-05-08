@@ -1,0 +1,51 @@
+- name: Check if Service Exists
+  stat: path=/etc/systemd/system/node_exporter.service
+  register: service_status
+
+- name: Stop Service
+  service: name=node_exporter state=stopped
+  when: service_status.stat.exists
+  register: service_stopped
+
+- name: Check if file already exists
+  stat: path=/tmp/node_exporter-{{ node_exporter_version }}.linux-armv6
+  register: node_exporter_exists
+
+- name: Download Prometheus Node Exporter
+  ansible.builtin.unarchive:
+    src: https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-armv6.tar.gz
+    dest: /tmp
+    remote_src: yes
+  when: not node_exporter_exists.stat.exists
+
+- name: Move binary
+  command: cp /tmp/node_exporter-{{ node_exporter_version }}.linux-armv6/node_exporter /usr/local/bin
+
+- name: Make binary executable
+  file:
+    dest: /usr/local/bin/node_exporter
+    mode: +x
+
+- name: Create a service account for the node_exporter
+  user:
+    name: node_exporter
+    shell: /bin/bash
+
+- name: Create var/lib/node_exporter
+  file:
+    path: /var/lib/node_exporter/textfile_collector
+    state: directory
+    recurse: yes
+    owner: node_exporter
+
+- name: Create service file
+  copy:
+    src: "{{ role_path }}/files/node_exporter.service"
+    dest: /etc/systemd/system/node_exporter.service
+
+- name: Enable and start node_exporter.service
+  systemd:
+    name: node_exporter
+    daemon_reload: yes
+    state: started
+    enabled: yes

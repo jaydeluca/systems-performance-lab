@@ -1,0 +1,43 @@
+- name: Download postgres-exporter
+  become: false
+  get_url:
+    url: "https://github.com/prometheus-community/postgres_exporter/releases/download/v{{ exporter_version }}/postgres_exporter-{{ exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp/postgres_exporter-{{ exporter_version }}.linux-{{ go_arch }}.tar.gz"
+  register: _download_archive
+  until: _download_archive is succeeded
+  retries: 5
+  delay: 2
+  check_mode: false
+
+- name: Unpack Binaries
+  become: false
+  unarchive:
+    src: "/tmp/postgres_exporter-{{ exporter_version }}.linux-{{ go_arch }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/postgres_exporter-{{ exporter_version }}.linux-{{ go_arch }}/postgres_exporter"
+    remote_src: yes
+  check_mode: false
+
+- name: Move Binary to bin
+  copy:
+    src: "/tmp/postgres_exporter-{{ exporter_version }}.linux-{{ go_arch }}/postgres_exporter"
+    dest: "{{ exporter_binary_install_dir }}/postgres_exporter"
+    mode: 0755
+    owner: root
+    group: root
+    remote_src: yes
+
+- name: Create Service Definition
+  template:
+    src: "{{ role_path }}/files/postgres_exporter.service.j2"
+    dest: /etc/systemd/system/postgres_exporter.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: Start Service
+  systemd:
+    daemon_reload: yes
+    name: postgres_exporter
+    state: reloaded
+    enabled: true
